@@ -32,7 +32,7 @@ export default fp(
 
       const protocol = `${request.protocol}/${request.raw.httpVersion}`;
       let originalResponseBody = payload;
-      let maskedResponseBody;
+      let maskedResponseBody = {};
       // try {
       //   if (Buffer.isBuffer(payload)) {
       //     originalResponseBody = originalResponseBody.toString("utf8");
