@@ -4,10 +4,16 @@
   "main": "index.js",
   "author": "Fran Zekan",
   "license": "MIT",
+  "scripts": {
+    "dev": "nodemon main.mjs"
+  },
   "dependencies": {
+    "@prisma/client": "^4.7.1",
     "autocannon": "^7.10.0",
     "dotenv": "^16.0.3",
     "fastify": "^4.10.2",
+    "nodemon": "^2.0.20",
+    "prisma": "^4.7.1",
     "treblle-fastify": "^0.0.1"
   }
 }

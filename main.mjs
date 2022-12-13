@@ -3,20 +3,30 @@ import { Worker, isMainThread, parentPort, workerData } from "node:worker_thread
 import fastify from "fastify";
 import { sendPayloadToTreblle } from "@treblle/utils";
 import treblleFastify from "treblle-fastify";
-import myTreblleFastify from "./myHook.mjs";
 import { config } from "dotenv";
+import { PrismaClient } from "@prisma/client";
+
+import myTreblleFastify from "./myHook.mjs";
 
 config();
 
 if (isMainThread) {
   const worker = new Worker(new URL("./main.mjs", import.meta.url).pathname);
   const app = fastify();
+  const prisma = new PrismaClient();
+  await prisma.$connect();
 
   const key = process.env.TREBLLE_API_KEY;
   const pid = process.env.TREBLLE_PROJECT_ID;
 
-  // app.register(treblleFastify, { apiKey: key, projectId: pid });
-  app.register(myTreblleFastify, { apiKey: key, projectId: pid, worker });
+  switch (process.env.TYPE) {
+    case "worker":
+      app.register(myTreblleFastify, { apiKey: key, projectId: pid, worker });
+      break;
+    case "plugin":
+      app.register(treblleFastify, { apiKey: key, projectId: pid });
+      break;
+  }
 
   app.get("/", async (request, reply) => {
     return {
@@ -34,15 +44,16 @@ if (isMainThread) {
     };
   });
 
-  (async () => {
-    try {
-      const host = await app.listen({ port: 3000 });
-      console.log(host);
-    } catch (err) {
-      app.log.error(err);
-      process.exit(1);
-    }
-  })();
+  const take = (query) => (query && !Number.isNaN(Number(query.take)) ? Number(query.take) : 50);
+  app.get("/db", (request, reply) => prisma.post.findMany({ take: take(request.query) }));
+
+  try {
+    const host = await app.listen({ port: 3000 });
+    console.log(host);
+  } catch (err) {
+    app.log.error(err);
+    process.exit(1);
+  }
 } else {
   parentPort.on("message", (data) => {
     const { trebllePayload, apiKey } = JSON.parse(data);
