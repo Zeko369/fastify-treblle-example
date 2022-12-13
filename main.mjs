@@ -45,7 +45,9 @@ if (isMainThread) {
   });
 
   const take = (query) => (query && !Number.isNaN(Number(query.take)) ? Number(query.take) : 50);
-  app.get("/db", (request, reply) => prisma.post.findMany({ take: take(request.query) }));
+  app.get("/db", async (request, reply) =>
+    JSON.stringify(await prisma.post.findMany({ take: take(request.query) }))
+  );
 
   try {
     const port = process.env.PORT ? Number(process.env.PORT) : 3000;
