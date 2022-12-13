@@ -46,7 +46,7 @@ if (isMainThread) {
 
   const take = (query) => (query && !Number.isNaN(Number(query.take)) ? Number(query.take) : 50);
   app.get("/db", async (request, reply) =>
-    JSON.stringify(await prisma.post.findMany({ take: take(request.query) }))
+    JSON.stringify({ data: await prisma.post.findMany({ take: take(request.query) }) })
   );
 
   try {
