@@ -48,7 +48,8 @@ if (isMainThread) {
   app.get("/db", (request, reply) => prisma.post.findMany({ take: take(request.query) }));
 
   try {
-    const host = await app.listen({ port: 3000 });
+    const port = process.env.PORT ? Number(process.env.PORT) : 3000;
+    const host = await app.listen({ port });
     console.log(host);
   } catch (err) {
     app.log.error(err);
